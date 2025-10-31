@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketHub - Login</title>
+    <link  rel="stylesheet" href="styles.css">
+    
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar">
+            <a href="#" class="logo">Market<span>Hub</span></a>
+            <ul class="nav-links">
+                <li><a href="#">Electronics</a></li>
+                <li><a href="#">Fashion</a></li>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Sports</a></li>
+                <li><a href="#">Motors</a></li>
+                <li><a href="#">Collectibles</a></li>
+            </ul>
+            <div class="auth-buttons">
+                <button class="btn btn-outline" id="showLogin">Login</button>
+                <button class="btn btn-primary" id="showRegister">Register</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="auth-container">
+            <div class="auth-forms" id="authForms">
+                <!-- Login Form -->
+                <div class="auth-form" id="loginForm">
+                    <div class="auth-header">
+                        <h2>Welcome Back</h2>
+                        <p>Sign in to your account</p>
+                    </div>
+                    <form id="loginFormElement">
+                        <div class="form-group">
+                            <label for="loginEmail">Email Address</label>
+                            <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required>
+                        </div>
+                        <a href="#" class="forgot-password-link" id="showForgotPassword">Forgot your password?</a>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+                    </form>
+                    <div class="form-footer">
+                        <p>Don't have an account? <a href="#" id="switchToRegister">Register</a></p>
+                    </div>
+                </div>
+
+                <!-- Registration Form -->
+                <div class="auth-form" id="registerForm">
+                    <div class="auth-header">
+                        <h2>Create Account</h2>
+                        <p>Join MarketHub today</p>
+                    </div>
+                    <form id="registerFormElement">
+                        <div class="profile-photo-container">
+                            <div class="profile-photo-preview" id="profilePhotoPreview">
+                                <span>👤</span>
+                            </div>
+                            <input type="file" id="profilePhoto" accept="image/*" style="display: none;">
+                            <button type="button" class="btn btn-outline" id="uploadPhotoBtn">Upload Photo</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" class="form-control" placeholder="Enter your first name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="middleName">Middle Name</label>
+                            <input type="text" id="middleName" class="form-control" placeholder="Enter your middle name">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" class="form-control" placeholder="Enter your last name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" class="form-control" placeholder="Choose a username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="birthday">Birthday</label>
+                            <input type="date" id="birthday" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">Email Address</label>
+                            <input type="email" id="registerEmail" class="form-control" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" id="registerPassword" class="form-control" placeholder="Create a password" required>
+                            <div class="password-strength">
+                                <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm your password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+                    </form>
+                    <div class="form-footer">
+                        <p>Already have an account? <a href="#" id="switchToLogin">Sign In</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal" id="forgotPasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Reset Your Password</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="forgotPasswordForm">
+                <div class="form-group">
+                    <label for="resetEmail">Enter your email address</label>
+                    <input type="email" id="resetEmail" class="form-control" placeholder="Your registered email" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Send Reset Code</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Code Verification Modal -->
+    <div class="modal" id="codeVerificationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Enter Verification Code</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <p>We've sent a 6-digit code to your email. Enter it below:</p>
+            <div class="code-inputs">
+                <input type="text" class="code-input" maxlength="1" data-index="0">
+                <input type="text" class="code-input" maxlength="1" data-index="1">
+                <input type="text" class="code-input" maxlength="1" data-index="2">
+                <input type="text" class="code-input" maxlength="1" data-index="3">
+                <input type="text" class="code-input" maxlength="1" data-index="4">
+                <input type="text" class="code-input" maxlength="1" data-index="5">
+            </div>
+            <div class="timer" id="codeTimer">Code expires in: 5:00</div>
+            <button type="button" class="btn btn-primary" style="width: 100%;" id="verifyCodeBtn">Verify Code</button>
+        </div>
+    </div>
+
+    <!-- New Password Modal -->
+    <div class="modal" id="newPasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Password</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="newPasswordForm">
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" class="form-control" placeholder="Enter new password" required>
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="newPasswordStrengthBar"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="confirmNewPassword">Confirm New Password</label>
+                    <input type="password" id="confirmNewPassword" class="form-control" placeholder="Confirm new password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Update Password</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>MarketHub</h4>
+                <p>Your trusted marketplace for electronics, fashion, home goods, and more.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Policies</a></li>
+                    <li><a href="#">Careers</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Categories</h4>
+                <ul>
+                    <li><a href="#">Electronics</a></li>
+                    <li><a href="#">Fashion</a></li>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Sports</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <ul>
+                    <li>Email: support@markethub.com</li>
+                    <li>Phone: +1 (555) 123-4567</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 MarketHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
