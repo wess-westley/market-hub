@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - ReMarket</title>
+    <link rel="stylesheet" href="assets/let.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">ReMarket</div>
+            <div class="nav-actions">
+                <a href="index.html" class="btn btn-outline">← Back to Store</a>
+                <button class="btn btn-primary" onclick="logout()">🚪 Logout</button>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Account Header -->
+        <div class="account-header">
+            <div class="user-avatar" id="userAvatar">👤</div>
+            <h1 id="userName">Welcome Back!</h1>
+            <p id="userEmail">Loading your account...</p>
+            
+            <div class="account-stats">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalOrders">0</span>
+                    <span class="stat-label">Total Orders</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalSpent">$0</span>
+                    <span class="stat-label">Total Spent</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="memberSince">0</span>
+                    <span class="stat-label">Days as Member</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="feedbackCount">0</span>
+                    <span class="stat-label">Feedbacks Sent</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('orders')">📦 Order History</button>
+            <button class="tab" onclick="switchTab('analytics')">📊 Purchase Analytics</button>
+            <button class="tab" onclick="switchTab('feedback')">💬 Send Feedback</button>
+        </div>
+
+        <!-- Orders Tab -->
+        <div class="tab-content active" id="orders-tab">
+            <h2 style="margin-bottom: 1.5rem;">Your Order History</h2>
+            <div class="orders-grid" id="ordersGrid">
+                <!-- Orders will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-content" id="analytics-tab">
+            <h2 style="margin-bottom: 1.5rem;">Your Purchase Analytics</h2>
+            <div class="analytics-grid">
+                <div class="chart-container">
+                    <h3>Monthly Spending Trend</h3>
+                    <div class="chart">
+                        <div class="chart-bars" id="spendingChart">
+                            <!-- Chart bars will be dynamically generated -->
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Purchase Categories</h3>
+                    <div class="chart">
+                        <div class="chart-bars" id="categoryChart">
+                            <!-- Category bars will be dynamically generated -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Feedback Tab -->
+        <div class="tab-content" id="feedback-tab">
+            <h2 style="margin-bottom: 1.5rem; text-align: center;">Share Your Thoughts 💭</h2>
+            
+            <div class="feedback-form">
+                <!-- Feedback Type Selector -->
+                <div class="feedback-type-selector">
+                    <div class="type-option selected" onclick="selectFeedbackType('suggestion', this)">
+                        <span class="type-icon">💡</span>
+                        <div>Suggestion</div>
+                    </div>
+                    <div class="type-option" onclick="selectFeedbackType('bug', this)">
+                        <span class="type-icon">🐛</span>
+                        <div>Bug Report</div>
+                    </div>
+                    <div class="type-option" onclick="selectFeedbackType('complaint', this)">
+                        <span class="type-icon">😠</span>
+                        <div>Complaint</div>
+                    </div>
+                    <div class="type-option" onclick="selectFeedbackType('praise', this)">
+                        <span class="type-icon">🎉</span>
+                        <div>Praise</div>
+                    </div>
+                </div>
+
+                <!-- Subject Field -->
+                <div class="floating-label">
+                    <input type="text" id="feedbackSubject" placeholder=" " required>
+                    <label for="feedbackSubject">Subject</label>
+                </div>
+
+                <!-- Enhanced Rating System -->
+                <div class="rating-container">
+                    <div class="rating-title">How would you rate your experience?</div>
+                    <div class="rating-stars">
+                        <span class="star" onclick="setRating(1)" data-rating="1">★</span>
+                        <span class="star" onclick="setRating(2)" data-rating="2">★</span>
+                        <span class="star" onclick="setRating(3)" data-rating="3">★</span>
+                        <span class="star" onclick="setRating(4)" data-rating="4">★</span>
+                        <span class="star" onclick="setRating(5)" data-rating="5">★</span>
+                    </div>
+                    <div class="rating-text" id="ratingText">Tap to rate</div>
+                </div>
+
+                <!-- Message Field with Character Counter -->
+                <div class="floating-label">
+                    <textarea id="feedbackMessage" placeholder=" " rows="5" required 
+                              oninput="updateCharacterCount()"></textarea>
+                    <label for="feedbackMessage">Your Message</label>
+                </div>
+                <div class="char-counter" id="charCounter">0/500 characters</div>
+                <div class="message-progress">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <!-- Enhanced Submit Button -->
+                <button class="submit-btn" onclick="submitFeedback()">
+                    <span class="btn-icon">📤</span>
+                    Send Your Feedback
+                </button>
+            </div>
+        </div>
+
+        <!-- Success Animation Overlay -->
+        <div class="feedback-overlay" id="feedbackOverlay">
+            <div class="success-animation">
+                <div class="success-icon">🎉</div>
+                <h3>Feedback Sent Successfully!</h3>
+                <p>Thank you for helping us improve ReMarket</p>
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray);">
+                    Your opinion means the world to us 💫
+                </p>
+                <button class="submit-btn" onclick="closeSuccessAnimation()" 
+                        style="margin-top: 2rem; background: var(--accent);">
+                    <span class="btn-icon">👍</span>
+                    Awesome!
+                </button>
+            </div>
+        </div>
+
+        <!-- Wall of Fame -->
+        <div class="wall-of-fame">
+            <h2>🏆 Wall of Fame</h2>
+            <p>Our top performers this month</p>
+            
+            <div class="fame-grid">
+                <!-- Top Sellers -->
+                <div class="fame-card">
+                    <span class="fame-rank rank-1">🥇</span>
+                    <div class="fame-avatar">🏪</div>
+                    <h3>Top Seller</h3>
+                    <div class="fame-name">
+                        <div class="animated-name rainbow-text" id="topSellerName">TechDeals</div>
+                    </div>
+                    <div class="fame-stats">
+                        <div class="fame-stat">
+                            <span class="fame-number" id="topSellerSales">0</span>
+                            <span class="fame-label">Sales</span>
+                        </div>
+                        <div class="fame-stat">
+                            <span class="fame-number" id="topSellerRating">0.0</span>
+                            <span class="fame-label">Rating</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Buyer -->
+                <div class="fame-card">
+                    <span class="fame-rank rank-2">🥈</span>
+                    <div class="fame-avatar">🛒</div>
+                    <h3>Top Buyer</h3>
+                    <div class="fame-name">
+                        <div class="animated-name typewriter" id="topBuyerName">Sarah Johnson</div>
+                    </div>
+                    <div class="fame-stats">
+                        <div class="fame-stat">
+                            <span class="fame-number" id="topBuyerOrders">0</span>
+                            <span class="fame-label">Orders</span>
+                        </div>
+                        <div class="fame-stat">
+                            <span class="fame-number" id="topBuyerSpent">$0</span>
+                            <span class="fame-label">Spent</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Most Active -->
+                <div class="fame-card">
+                    <span class="fame-rank rank-3">🥉</span>
+                    <div class="fame-avatar">⚡</div>
+                    <h3>Most Active</h3>
+                    <div class="fame-name">
+                        <div class="animated-name bounce-letters" id="mostActiveName">Mike Chen</div>
+                    </div>
+                    <div class="fame-stats">
+                        <div class="fame-stat">
+                            <span class="fame-number" id="activeDays">0</span>
+                            <span class="fame-label">Active Days</span>
+                        </div>
+                        <div class="fame-stat">
+                            <span class="fame-number" id="totalActions">0</span>
+                            <span class="fame-label">Actions</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   <script src="assets/javascript/let.js"></script>
+    
+</body>
+</html>

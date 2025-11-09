@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - ReMarket</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="assets/Admin.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div class="login-container" id="loginPage">
+        <div class="login-header">
+            <div class="login-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h1>Admin Access Required</h1>
+            <p>Enter your administrator credentials to continue</p>
+        </div>
+
+        <div class="security-notice">
+            <h4><i class="fas fa-exclamation-triangle"></i> Security Notice</h4>
+            <p>This area is restricted to authorized personnel only. Unauthorized access attempts will be logged and monitored.</p>
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorText">Invalid username or password</span>
+        </div>
+
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <label for="adminUsername">Username</label>
+                <input type="text" id="adminUsername" class="form-control" placeholder="Enter admin username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="adminPassword">Password</label>
+                <div class="password-input">
+                    <input type="password" id="adminPassword" class="form-control" placeholder="Enter admin password" required>
+                    <button type="button" class="toggle-password" id="togglePassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                <i class="fas fa-lock"></i>
+                Access Admin Panel
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p>For security reasons, access is limited to authorized administrators only.</p>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+        <div class="loading-text">Authenticating...</div>
+        <div class="loading-subtext">Please wait while we verify your credentials</div>
+    </div>
+
+    <!-- Payment Processing Animation -->
+    <div class="payment-processing" id="paymentProcessing">
+        <div class="payment-animation">
+            <div class="payment-circle"></div>
+            <div class="payment-icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+        </div>
+        <div class="loading-text">Processing Payment</div>
+        <div class="loading-subtext">Transferring funds to seller's account</div>
+    </div>
+
+    <!-- Payment Success Animation -->
+    <div class="payment-success" id="paymentSuccess">
+        <div class="success-animation">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+        </div>
+        <div class="success-message">
+            <h2>Payment Successful!</h2>
+            <p id="successSellerName">Payment has been processed for</p>
+            <div class="success-details">
+                <p>Transaction ID: <span id="successTransactionId">RM-2023-10-001</span></p>
+                <p>Date: <span id="successDate">October 20, 2023</span></p>
+            </div>
+            <div class="success-amount" id="successAmount">$276.74</div>
+            <p>has been transferred to the seller's account</p>
+            <button class="success-btn" onclick="closePaymentSuccess()">Continue</button>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div class="admin-dashboard" id="adminDashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-recycle"></i>
+                    <span>ReMarket</span>
+                </div>
+                <div class="admin-badge">ADMIN</div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-item active" data-section="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="menu-item" data-section="user-management">
+                    <i class="fas fa-users"></i>
+                    <span>User Management</span>
+                </div>
+                <div class="menu-item" data-section="order-management">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Order Management</span>
+                </div>
+                <div class="menu-item" data-section="notifications">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">AD</div>
+                    <div class="user-details">
+                        <h4>Admin User</h4>
+                        <p>System Administrator</p>
+                    </div>
+                </div>
+                <button class="btn btn-outline" style="width: 100%; color: white; border-color: rgba(255,255,255,0.3);" onclick="logoutAdmin()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search users, orders, logs...">
+                </div>
+                
+                <div class="top-bar-actions">
+                    <button class="btn btn-primary" onclick="showNotificationForm()">
+                        <i class="fas fa-bullhorn"></i>
+                        Post Notification
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Dashboard Section -->
+                <div class="dashboard-section" id="dashboard-section">
+                    <div class="dashboard-header">
+                        <h1><i class="fas fa-shield-alt admin-icon"></i> Admin Dashboard</h1>
+                        <p>Welcome back, Administrator. Here's an overview of the ReMarket platform.</p>
+                    </div>
+                    
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon primary">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="totalUsers">2,458</h3>
+                                <p>Total Users</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon success">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="activeSellers">342</h3>
+                                <p>Active Sellers</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="todayOrders">1,847</h3>
+                                <p>Orders Today</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="pendingIssues">12</h3>
+                                <p>Pending Issues</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simple Analytics -->
+                    <div class="analytics-section">
+                        <div class="section-header">
+                            <h2>Platform Analytics</h2>
+                            <div class="time-filter">
+                                <button class="time-filter-btn active" onclick="changeTimeRange('daily')">Daily</button>
+                                <button class="time-filter-btn" onclick="changeTimeRange('weekly')">Weekly</button>
+                                <button class="time-filter-btn" onclick="changeTimeRange('monthly')">Monthly</button>
+                            </div>
+                        </div>
+                        <div class="simple-chart">
+                            <canvas id="analyticsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Notifications Section -->
+                    <div class="notification-section">
+                        <div class="section-header">
+                            <h2>Site Notifications</h2>
+                            <button class="btn btn-primary" onclick="showNotificationForm()">
+                                <i class="fas fa-plus"></i>
+                                New Notification
+                            </button>
+                        </div>
+
+                        <!-- Notification Form (Hidden by default) -->
+                        <div class="notification-form" id="notificationForm" style="display: none;">
+                            <div class="form-group">
+                                <label for="notificationTitle">Title</label>
+                                <input type="text" id="notificationTitle" class="form-control" placeholder="Enter notification title">
+                            </div>
+                            <div class="form-group">
+                                <label for="notificationMessage">Message</label>
+                                <textarea id="notificationMessage" class="form-control" rows="3" placeholder="Enter notification message"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-primary" onclick="createNotification()">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Publish Notification
+                                </button>
+                                <button type="button" class="btn btn-outline" onclick="hideNotificationForm()">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Notifications List -->
+                        <div class="notification-list" id="notificationsList">
+                            <!-- Notifications will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Management Section -->
+                <div class="user-management-section" id="user-management-section" style="display: none;">
+                    <div class="dashboard-header">
+                        <h1><i class="fas fa-users admin-icon"></i> User Management</h1>
+                        <p>Manage all users, sellers, and buyers on the ReMarket platform.</p>
+                    </div>
+
+                    <div class="user-tabs">
+                        <button class="user-tab active" data-tab="all">All Users</button>
+                        <button class="user-tab" data-tab="sellers">Sellers</button>
+                        <button class="user-tab" data-tab="buyers">Buyers</button>
+                    </div>
+
+                    <div class="user-search-filter">
+                        <div class="user-search">
+                            <input type="text" class="form-control" placeholder="Search users by name, email, or ID..." id="userSearch">
+                        </div>
+                        <div class="user-filter">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="active">Active</button>
+                            <button class="filter-btn" data-filter="frozen">Frozen</button>
+                            <button class="filter-btn" data-filter="banned">Banned</button>
+                            <button class="filter-btn" data-filter="warning">Warning</button>
+                            <button class="filter-btn" data-filter="paid">Paid</button>
+                        </div>
+                    </div>
+
+                    <div class="users-table-container">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Registration Date</th>
+                                    <th>Last Activity</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Users will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Order Management Section -->
+                <div class="order-management-section" id="order-management-section" style="display: none;">
+                    <div class="dashboard-header">
+                        <h1><i class="fas fa-shopping-cart admin-icon"></i> Order Management</h1>
+                        <p>Manage all orders, process payments to sellers, and handle customer complaints.</p>
+                    </div>
+
+                    <div class="order-tabs">
+                        <button class="order-tab active" data-tab="all-orders">All Orders</button>
+                        <button class="order-tab" data-tab="seller-payments">Seller Payments</button>
+                        <button class="order-tab" data-tab="complaints">Customer Complaints</button>
+                        <button class="order-tab" data-tab="earnings">Earnings Overview</button>
+                    </div>
+
+                    <!-- All Orders Tab -->
+                    <div class="order-tab-content active" id="all-orders-tab">
+                        <div class="order-time-filter">
+                            <button class="order-time-btn active" data-period="daily">Daily</button>
+                            <button class="order-time-btn" data-period="weekly">Weekly</button>
+                            <button class="order-time-btn" data-period="monthly">Monthly</button>
+                        </div>
+
+                        <table class="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Seller</th>
+                                    <th>Product</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <!-- Orders will be loaded here -->
+                            </tbody>
+                        </table>
+
+                        <div class="order-chart-container">
+                            <canvas id="ordersChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Seller Payments Tab -->
+                    <div class="order-tab-content" id="seller-payments-tab" style="display: none;">
+                        <div class="earnings-card">
+                            <div class="earnings-header">
+                                <h3>Pending Payments to Sellers</h3>
+                                <div class="earnings-amount" id="totalPendingAmount">$0.00</div>
+                            </div>
+                            <p>Process payments to sellers (65% of their earnings)</p>
+                            <button class="btn btn-outline" onclick="resetAllPayments()" style="margin-top: 1rem;">
+                                <i class="fas fa-redo"></i> Reset All Payments
+                            </button>
+                        </div>
+
+                        <table class="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Seller</th>
+                                    <th>Total Earnings</th>
+                                    <th>Pending Amount</th>
+                                    <th>Orders Count</th>
+                                    <th>Last Payment</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sellersTableBody">
+                                <!-- Sellers with pending payments will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Customer Complaints Tab -->
+                    <div class="order-tab-content" id="complaints-tab" style="display: none;">
+                        <div class="complaint-section">
+                            <h3>Recent Customer Complaints</h3>
+                            <div id="complaintsList">
+                                <!-- Complaints will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Earnings Overview Tab -->
+                    <div class="order-tab-content" id="earnings-tab" style="display: none;">
+                        <div class="earnings-card">
+                            <div class="earnings-header">
+                                <h3>Platform Earnings Overview</h3>
+                                <div class="earnings-amount" id="platformEarnings">$0.00</div>
+                            </div>
+                            <div class="earnings-details">
+                                <div class="earnings-item">
+                                    <span class="earnings-label">Total Revenue</span>
+                                    <span class="earnings-value" id="totalRevenue">$0.00</span>
+                                </div>
+                                <div class="earnings-item">
+                                    <span class="earnings-label">Paid to Sellers</span>
+                                    <span class="earnings-value" id="paidToSellers">$0.00</span>
+                                </div>
+                                <div class="earnings-item">
+                                    <span class="earnings-label">Refunds Issued</span>
+                                    <span class="earnings-value" id="refundsIssued">$0.00</span>
+                                </div>
+                                <div class="earnings-item">
+                                    <span class="earnings-label">Platform Profit</span>
+                                    <span class="earnings-value" id="platformProfit">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="order-chart-container">
+                            <canvas id="earningsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Section -->
+                <div id="notifications-section" style="display: none;">
+                    <!-- Notifications content -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Management Modals -->
+    <div class="warning-modal" id="warningModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Send Warning</h3>
+                <button class="modal-close" onclick="closeModal('warningModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="warningMessage">Warning Message</label>
+                <textarea id="warningMessage" class="form-control" rows="4" placeholder="Enter warning message..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('warningModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="sendWarning()">Send Warning</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="freeze-modal" id="freezeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-snowflake"></i> Freeze Account</h3>
+                <button class="modal-close" onclick="closeModal('freezeModal')">&times;</button>
+            </div>
+            <p>Are you sure you want to freeze this account? The user will not be able to access their account until it is unfrozen.</p>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('freezeModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="freezeAccount()">Freeze Account</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="ban-modal" id="banModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-ban"></i> Ban Account</h3>
+                <button class="modal-close" onclick="closeModal('banModal')">&times;</button>
+            </div>
+            <p>Are you sure you want to permanently ban this account? This action cannot be undone.</p>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('banModal')">Cancel</button>
+                <button class="btn btn-danger" onclick="banAccount()">Ban Account</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="delete-modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-trash"></i> Delete Account</h3>
+                <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>
+            </div>
+            <p>Are you sure you want to permanently delete this account? All user data will be removed and this action cannot be undone.</p>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('deleteModal')">Cancel</button>
+                <button class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Management Modals -->
+    <div class="payment-modal" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-money-bill-wave"></i> Process Payment</h3>
+                <button class="modal-close" onclick="closeModal('paymentModal')">&times;</button>
+            </div>
+            <div class="payment-details">
+                <div class="payment-item">
+                    <span class="payment-label">Seller:</span>
+                    <span class="payment-value" id="paymentSellerName">-</span>
+                </div>
+                <div class="payment-item">
+                    <span class="payment-label">Total Earnings:</span>
+                    <span class="payment-value" id="paymentTotalEarnings">$0.00</span>
+                </div>
+                <div class="payment-item">
+                    <span class="payment-label">Platform Fee (35%):</span>
+                    <span class="payment-value" id="paymentPlatformFee">$0.00</span>
+                </div>
+                <div class="payment-total">
+                    <span class="payment-label">Amount to Pay (65%):</span>
+                    <span class="payment-value" id="paymentAmount">$0.00</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('paymentModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmPayment()">Confirm Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="refund-modal" id="refundModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-undo"></i> Process Refund</h3>
+                <button class="modal-close" onclick="closeModal('refundModal')">&times;</button>
+            </div>
+            <div class="refund-details">
+                <div class="refund-item">
+                    <span class="refund-label">Customer:</span>
+                    <span class="refund-value" id="refundCustomerName">-</span>
+                </div>
+                <div class="refund-item">
+                    <span class="refund-label">Order Amount:</span>
+                    <span class="refund-value" id="refundOrderAmount">$0.00</span>
+                </div>
+                <div class="refund-item">
+                    <span class="refund-label">Refund Amount (90%):</span>
+                    <span class="refund-value" id="refundAmount">$0.00</span>
+                </div>
+                <div class="refund-total">
+                    <span class="refund-label">Amount to Refund:</span>
+                    <span class="refund-value" id="refundTotal">$0.00</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('refundModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="processRefund()">Confirm Refund</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/javascript/Admin.js"></script>
+</body>
+</html>
