@@ -322,10 +322,22 @@ function togglePasswordVisibility() {
 });
 
         
-const users = [];
+// Load existing users separately
+let buyers = JSON.parse(localStorage.getItem("buyers")) || [];
+let sellers = JSON.parse(localStorage.getItem("sellers")) || [];
 let lastRegisteredEmail = '';
 
-function register() {
+// Convert image file to base64
+function convertImageToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject("Image conversion failed");
+        reader.readAsDataURL(file);
+    });
+}
+
+async function register() {
     const userType = document.querySelector('.user-type.active').getAttribute('data-type');
     const email = document.getElementById('register-email').value;
     const phone = document.getElementById('register-phone').value;
@@ -334,68 +346,91 @@ function register() {
     const username = document.getElementById("User-Name").value;
     const image = document.getElementById("profilePhoto").files[0];
 
+    // ✅ Basic validations
     if (!email || !phone || !password || !confirmPassword || !username) {
         alert('Please fill in all required fields');
         return;
     }
     if (checkPasswordStrength() === false) {
-    alert("Your password is too weak! Use uppercase letters, numbers, special characters, and at least 8 characters.");
-    return;
-     }
-
-
+        alert("Your password is too weak!");
+        return;
+    }
     if (password !== confirmPassword) {
         alert('Passwords do not match');
         return;
     }
-
     if (!image) {
         alert('Please upload a profile picture.');
         return;
     }
-
     if (image.type !== 'image/jpeg') {
         alert('Only JPG images are allowed.');
         return;
     }
-
     if (image.size > 10 * 1024 * 1024) {
         alert('Image must not exceed 10MB.');
         return;
     }
 
+    // ✅ Check if user exists in BOTH groups
+    const existsInBuyers = buyers.some(u => u.email === email);
+    const existsInSellers = sellers.some(u => u.email === email);
+
+    if (existsInBuyers || existsInSellers) {
+        alert("This email is already registered!");
+        return;
+    }
+
+    // ✅ EXTRA seller validation
+    let sellerInfo = null;
     if (userType === 'seller') {
         const name = document.getElementById('seller-name').value;
         const id = document.getElementById('seller-id').value;
         const category = document.getElementById('seller-category').value;
 
         if (!name || !id || !category) {
-            alert('Please fill in all seller information');
+            alert('Please fill in all seller details');
             return;
         }
+
+        sellerInfo = { name, id, category };
     }
 
     showRegistrationSpinner();
 
+    // Convert image to Base64
+    const base64Image = await convertImageToBase64(image);
+
     setTimeout(() => {
-        users.push({
+        const newUser = {
             email,
+            phone,
             password,
-            userType,
             username,
-            image
-        });
+            profileImage: base64Image,
+            createdAt: new Date().toISOString()
+        };
+
+        // ✅ Save to correct group
+        if (userType === 'buyer') {
+            buyers.push(newUser);
+            localStorage.setItem("buyers", JSON.stringify(buyers));
+        } else if (userType === 'seller') {
+            sellers.push({ ...newUser, sellerInfo });
+            localStorage.setItem("sellers", JSON.stringify(sellers));
+        }
 
         lastRegisteredEmail = email;
         showSuccessMessage(username);
 
-        setTimeout(() => {
-            redirectToLogin();
-        }, 5000);
-    }, 5000);
-    clearRegistrationFields();
+        setTimeout(() => redirectToLogin(), 5000);
 
+    }, 5000);
+
+    clearRegistrationFields();
 }
+
+
 
 function showRegistrationSpinner() {
     const spinnerOverlay = document.createElement('div');
@@ -520,7 +555,7 @@ function login() {
         alert('Please fill in all fields');
         return;
     }
-
+    
     const user = users.find(u => u.email === email);
 
     if (!user) {
@@ -783,22 +818,218 @@ function login() {
         showVibeAlert('Please fill in all fields', 'error');
         return;
     }
+    // Admin login check
+if (email.toLowerCase() === 'admin@gmail.com') {
+    if (password !== 'Admin123') {
+        // Wrong admin password — vibe alert animation
+        const alertDiv = document.createElement('div');
+        alertDiv.textContent = '❌ Incorrect Admin password!';
+        alertDiv.style.cssText = `
+            position: fixed;
+            top: 20px; left: 50%;
+            transform: translateX(-50%);
+            background: #ff4c4c;
+            color: white;
+            padding: 15px 25px;
+            font-size: 18px;
+            border-radius: 8px;
+            z-index: 10000;
+            animation: slideDown 0.6s ease-out;
+        `;
+        document.body.appendChild(alertDiv);
+        document.getElementById('login-password').value = '';
 
-    // Show creative login animation
-    showLoginAnimation();
+        setTimeout(() => {
+            alertDiv.style.transition = 'opacity 0.5s';
+            alertDiv.style.opacity = 0;
+            setTimeout(() => alertDiv.remove(), 500);
+        }, 2000);
 
-    // Simulate API call delay
-    setTimeout(() => {
-        const user = users.find(u => u.email === email);
+        return; // Stop further execution
+    }
 
-        if (!user) {
-            hideLoginAnimation();
-            showVibeAlert('User not registered. Please sign up first.', 'error');
-            document.getElementById('login-email').value = '';
-            document.getElementById('login-password').value = '';
-            return;
+    // ✅ Correct admin password — proceed with vibe animation
+    currentUser = {
+        email,
+        username: 'Admin',
+        userType: 'admin'
+    };
+
+    // Close auth modal
+    const authModal = document.getElementById('authModal');
+    if (authModal) authModal.classList.remove('active');
+
+    showAdminControls(); // Show all admin features
+
+    // Clear login inputs
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
+
+    // Create welcome overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'admin-welcome-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        flex-direction: column;
+        color: white;
+        font-family: 'Arial', sans-serif;
+        text-align: center;
+    `;
+
+    overlay.innerHTML = `
+        <div style="font-size: 32px; margin-bottom: 20px; animation: fadeIn 1s;">👑 Welcome back, Admin!</div>
+        <div style="font-size: 20px; margin-bottom: 15px; animation: fadeIn 1s 0.5s;">Pick your Admin name:</div>
+        <div style="display:flex; gap: 10px; animation: fadeIn 1s 1s;">
+            <button class="vibe-btn">Wess</button>
+            <button class="vibe-btn">Mulinge</button>
+            <button class="vibe-btn">Biba</button>
+        </div>
+        <div id="vibe-greeting" style="margin-top: 20px; font-size: 28px; opacity:0; position: relative;"></div>
+        <canvas id="confetti-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+    `;
+    document.body.appendChild(overlay);
+
+    // Add animations & button style
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideDown {
+            from { transform: translate(-50%, -50px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        .vibe-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s, background 0.3s;
+        }
+        .vibe-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #67e87c, #45a049);
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Confetti & greeting
+    function launchConfettiAroundText(element) {
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const confettiCount = 150;
+        const confetti = [];
+        for (let i = 0; i < confettiCount; i++) {
+            confetti.push({
+                x: element.offsetLeft + element.offsetWidth/2,
+                y: element.offsetTop + element.offsetHeight/2,
+                r: Math.random() * 6 + 4,
+                d: Math.random() * confettiCount,
+                color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                tilt: Math.random() * 10 - 10,
+                tiltAngleIncremental: Math.random() * 0.07 + 0.05,
+                tiltAngle: 0,
+                vx: Math.random() * 6 - 3,
+                vy: Math.random() * -6 - 2
+            });
         }
 
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            confetti.forEach(c => {
+                ctx.beginPath();
+                ctx.lineWidth = c.r / 2;
+                ctx.strokeStyle = c.color;
+                ctx.moveTo(c.x + c.tilt, c.y);
+                ctx.lineTo(c.x + c.tilt + c.vx, c.y + c.vy + c.tilt);
+                ctx.stroke();
+            });
+            update();
+        }
+
+        function update() {
+            confetti.forEach(c => {
+                c.x += c.vx;
+                c.y += c.vy + 1;
+                c.tilt = Math.sin(c.tiltAngle) * 15;
+                c.tiltAngle += c.tiltAngleIncremental;
+                if (c.y > canvas.height || c.x < 0 || c.x > canvas.width) {
+                    c.x = element.offsetLeft + element.offsetWidth/2;
+                    c.y = element.offsetTop + element.offsetHeight/2;
+                }
+            });
+        }
+
+        const interval = setInterval(draw, 16);
+        setTimeout(() => {
+            clearInterval(interval);
+            canvas.remove();
+        }, 3000);
+    }
+
+    // Handle vibe selection
+    overlay.querySelectorAll('.vibe-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const name = btn.textContent;
+            const greeting = document.getElementById('vibe-greeting');
+            greeting.textContent = `Oooh, ${name}! Hello! ✨`;
+            greeting.style.opacity = 1;
+            launchConfettiAroundText(greeting);
+
+            setTimeout(() => {
+                overlay.style.transition = 'opacity 0.8s';
+                overlay.style.opacity = 0;
+                setTimeout(() => overlay.remove(), 800);
+            }, 2000);
+        });
+    });
+
+    return; // Stop normal login flow
+}
+
+
+    // Load users from storage
+    const buyers = JSON.parse(localStorage.getItem("buyers")) || [];
+    const sellers = JSON.parse(localStorage.getItem("sellers")) || [];
+
+    // Start animation
+    showLoginAnimation();
+
+    setTimeout(() => {
+        let user = null;
+        let role = null;
+
+        // ✅ Check buyers list
+        const buyer = buyers.find(u => u.email === email);
+        if (buyer) {
+            user = buyer;
+            role = "buyer";
+        }
+
+        // ✅ Check sellers list
+        const seller = sellers.find(u => u.email === email);
+        if (seller) {
+            user = seller;
+            role = "seller";
+        }
+
+       
+
+        // ✅ Wrong password
         if (user.password !== password) {
             hideLoginAnimation();
             showVibeAlert('Incorrect password.', 'error');
@@ -806,11 +1037,15 @@ function login() {
             return;
         }
 
-        // Successful login
+        // ✅ Add userType to the object before sending forward
+        user.userType = role;
+
+        // Success animation + login operations
         completeLogin(user);
-        
-    }, 3000); // Simulate network delay
+
+    }, 3000);
 }
+
 
 function showLoginAnimation() {
     const loginOverlay = document.createElement('div');
@@ -1158,7 +1393,11 @@ function completeLogin(user) {
         
         // Your existing login completion logic
         currentUser = user;
+
         authModal.classList.remove('active');
+        updateRoleUI(user.userType);
+        localStorage.setItem("currentUser", JSON.stringify(user));
+
         
         document.querySelector('.auth-buttons').innerHTML = `
             <div class="nav-action">
@@ -1237,7 +1476,7 @@ function seePassword(inputId, iconElement) {
       iconElement.classList.add("fa-eye");
     }
   }
-function showAdminlogin() {
+function showAdminLogin() {
   document.querySelector('.Admin-btn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting...';
   setTimeout(() => {
     window.location.href = 'Admin.html';
@@ -1249,3 +1488,41 @@ function goToFavorites() {
 function goToCart() {
   window.location.href = 'Cart.html';
 }
+function updateRoleUI(role) {
+    const sellerBtn = document.getElementById("sellerBtn");
+
+    // If button doesn't exist yet, stop
+    if (!sellerBtn) return;
+
+    // Not logged in → hide seller button
+    if (!role) {
+        sellerBtn.style.display = "none";
+        
+        return;
+    }
+
+    // Logged in but buyer → hide
+    if (role === "buyer") {
+        sellerBtn.style.display = "none";
+    }
+
+    // Logged in as seller → show
+    if (role === "seller") {
+        sellerBtn.style.display = "flex"; // or block
+    }
+}
+
+function showAdminControls() {
+    const authButtons = document.querySelector('.auth-buttons');
+    authButtons.innerHTML = `
+        <button class="btn btn-outline" id="logoutBtn">Logout</button>
+        <button class="Admin-btn" id="adminPanelBtn">🔧 Admin Panel</button>
+    `;
+
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('adminPanelBtn').addEventListener('click', showAdminLogin);
+}
+window.addEventListener('DOMContentLoaded', () => {
+    const adminBtn = document.getElementById('adminPanelBtn');
+    if (adminBtn) adminBtn.style.display = 'none';
+});
