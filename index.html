@@ -29,6 +29,20 @@
                         <button class="btn btn-outline" id="showLogin">Login</button>
                         <button class="btn btn-primary" id="showRegister">Register</button>
                     </div>
+                  <div class="nav-action" onclick="goToCart()">
+    <i class="fas fa-shopping-cart"></i>
+    <span>Cart</span>
+    <span class="badge" id="cart-count">0</span>
+</div>
+
+<div class="nav-actions">
+    <div class="nav-action" onclick="goToFavorites()">
+        <i class="far fa-heart"></i>
+        <span>Favorites</span>
+        <span class="badge" id="favorites-count">0</span>
+    </div>
+</div>
+
                     <button class="sell-btn" id="sellerBtn" onclick="showSellerRegistration()">
                         <i class="fas fa-plus"></i>
                         <span>Sell</span>
@@ -43,24 +57,29 @@
         </div>
     </header>
     
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>Find Quality Secondhand Goods at Great Prices</h1>
-                <p>ReMarket connects buyers and sellers of pre-loved items. From electronics to collectibles, find exactly what you're looking for.</p>
-                <div class="hero-buttons">
-                    <button class="btn btn-white" onclick="showBuyerRegistration()">
-                        <i class="fas fa-shopping-bag"></i>
-                        Start Shopping
-                    </button>
-                    <button class="btn btn-outline-white" onclick="showSellerRegistration()">
-                        <i class="fas fa-store"></i>
-                        Become a Seller
-                    </button>
-                </div>
-            </div>
+    <section class="hero-splash">
+    <canvas id="particleCanvas"></canvas>
+
+   
+
+    <!-- CONTENT -->
+    <div class="content-container glass">
+        <h1 class="hero-title">Find Quality Secondhand Goods at Great Prices</h1>
+        <p class="hero-subtitle">
+            From electronics to collectibles — discover top-value preloved items.
+        </p>
+
+        <div class="hero-buttons">
+            <button class="btn btn-white" onclick="showBuyerRegistration()">
+                <i class="fas fa-shopping-bag"></i> Start Shopping
+            </button>
+            <button class="btn btn-outline-white" onclick="showSellerRegistration()">
+                <i class="fas fa-store"></i> Become a Seller
+            </button>
         </div>
-    </section>
+    </div>
+</section>
+
     
     <div class="container">
         <div class="main-content">
@@ -107,6 +126,9 @@
                             <div class="listing-image">
                                 <i class="fas fa-laptop"></i>
                                 <span class="condition-tag like-new">Like New</span>
+                                <button class="favorite-btn" onclick="toggleFavorite(this)">
+                                   <i class="far fa-heart"></i>
+                                 </button>
                             </div>
                             <div class="listing-details">
                                 <h3 class="listing-title">MacBook Pro 14" M1 - Excellent Condition</h3>
@@ -114,8 +136,8 @@
                                     <i class="fas fa-store"></i>
                                     by TechDeals
                                 </p>
-                                <p class="listing-price">$1299.99</p>
-                                <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="showBuyerRegistration()">
+                                <p class="listing-price">KSh 1299.99</p>
+                                <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="AddtoCart(this)">
                                     <i class="fas fa-shopping-cart"></i>
                                     Add to Cart
                                 </button>
@@ -127,6 +149,9 @@
                             <div class="listing-image">
                                 <i class="fas fa-camera"></i>
                                 <span class="condition-tag used">Used</span>
+                                <button class="favorite-btn" onclick="toggleFavorite(this)">
+                                   <i class="far fa-heart"></i>
+                                 </button>
                             </div>
                             <div class="listing-details">
                                 <h3 class="listing-title">Vintage Canon AE-1 Film Camera</h3>
@@ -134,7 +159,7 @@
                                     <i class="fas fa-store"></i>
                                     by VintageCollector
                                 </p>
-                                <p class="listing-price">Current bid: $145.00</p>
+                                <p class="listing-price">Current bid:Ksh 145.00</p>
                                 <div class="auction-info">
                                     <div class="timer">
                                         <i class="far fa-clock"></i>
@@ -154,6 +179,9 @@
                             <div class="listing-image">
                                 <i class="fas fa-mobile-alt"></i>
                                 <span class="condition-tag good">Good</span>
+                                <button class="favorite-btn" onclick="toggleFavorite(this)">
+                                   <i class="far fa-heart"></i>
+                                  </button>
                             </div>
                             <div class="listing-details">
                                 <h3 class="listing-title">iPhone 13 Pro - 256GB - Graphite</h3>
@@ -161,8 +189,8 @@
                                     <i class="fas fa-store"></i>
                                     by MobileMart
                                 </p>
-                                <p class="listing-price">$649.99</p>
-                                <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="showBuyerRegistration()">
+                                <p class="listing-price">Ksh 649.99</p>
+                                <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="AddtoCart(this)">
                                     <i class="fas fa-shopping-cart"></i>
                                     Add to Cart
                                 </button>
@@ -174,6 +202,9 @@
                             <div class="listing-image">
                                 <i class="fas fa-gamepad"></i>
                                 <span class="condition-tag like-new">Like New</span>
+                                <button class="favorite-btn" onclick="toggleFavorite(this)">
+                                    <i class="far fa-heart"></i>
+                                 </button>
                             </div>
                             <div class="listing-details">
                                 <h3 class="listing-title">PlayStation 5 Console with Controller</h3>
@@ -181,7 +212,7 @@
                                     <i class="fas fa-store"></i>
                                     by GamerHub
                                 </p>
-                                <p class="listing-price">Current bid: $425.00</p>
+                                <p class="listing-price">Current bid: ksh 425.00</p>
                                 <div class="auction-info">
                                     <div class="timer">
                                         <i class="far fa-clock"></i>
@@ -200,7 +231,10 @@
             </div>
         </div>
     </div>
-    
+       <div class="notification" id="notification">
+        <i class="fas fa-heart"></i>
+        <span class="notification-text">Added to favorites!</span>
+    </div>
     <!-- Auth Modal -->
     <div class="modal" id="authModal">
         <div class="modal-content">

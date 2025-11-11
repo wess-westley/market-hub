@@ -547,55 +547,6 @@ function showLoginModal() {
 
 let currentUser = null;
 
-function login() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-
-    if (!email || !password) {
-        alert('Please fill in all fields');
-        return;
-    }
-    
-    const user = users.find(u => u.email === email);
-
-    if (!user) {
-        alert('User not registered. Please sign up first.');
-         document.getElementById('login-email').value = '';
-         document.getElementById('login-password').value = '';
-        
-        return;
-    }
-
-    if (user.password !== password) {
-        alert('Incorrect password.');
-         
-         document.getElementById('login-password').value = '';
-        return;
-    }
-
-    currentUser = user;
-
-    // Close auth modal
-    const authModal = document.getElementById('authModal');
-    if (authModal) authModal.classList.remove('active');
-
-    // Update auth buttons
-    const authButtons = document.querySelector('.auth-buttons');
-    authButtons.innerHTML = `
-        <button class="btn btn-outline" id="logoutBtn">Logout</button>
-        ${user.userType === 'seller' ? `
-            <button class="btn btn-primary" id="sellerDashboardBtn">Seller Dashboard</button>
-        ` : ''}
-    `;
-
-    // Attach listeners
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-    if (user.userType === 'seller') {
-        document.getElementById('sellerDashboardBtn').addEventListener('click', showSellerDashboard);
-    }
-
-    alert(`Welcome back, ${user.username}!`);
-}
 function logout() {
     // Show enhanced logout animation
     showEnhancedLogoutAnimation();
@@ -847,14 +798,15 @@ if (email.toLowerCase() === 'admin@gmail.com') {
 
         return; // Stop further execution
     }
-
+   
     // ✅ Correct admin password — proceed with vibe animation
     currentUser = {
         email,
         username: 'Admin',
         userType: 'admin'
     };
-
+     sessionStorage.setItem('isLoggedIn', 'true');
+      sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
     // Close auth modal
     const authModal = document.getElementById('authModal');
     if (authModal) authModal.classList.remove('active');
@@ -1039,6 +991,9 @@ if (email.toLowerCase() === 'admin@gmail.com') {
 
         // ✅ Add userType to the object before sending forward
         user.userType = role;
+         //  Persist login state in sessionStorage
+         sessionStorage.setItem('isLoggedIn', 'true');
+         sessionStorage.setItem('currentUser', JSON.stringify(user));
 
         // Success animation + login operations
         completeLogin(user);
@@ -1405,17 +1360,7 @@ function completeLogin(user) {
                 <span>${user.username || 'My Account'}</span>
             </div>
             <button class="btn btn-outline" onclick="logout()">Logout</button>
-          <div class="nav-action" onclick="goToCart()">
-               <i class="fas fa-shopping-cart"></i>
-                <span>Cart</span>
-               </div>
-
-             <div class="nav-actions">
-              <div class="nav-action" onclick="goToFavorites()">
-            <i class="far fa-heart"></i>
-            <span>Favorites</span>
-             </div>
-            </div>
+         
 
         `;
         
@@ -1526,3 +1471,232 @@ window.addEventListener('DOMContentLoaded', () => {
     const adminBtn = document.getElementById('adminPanelBtn');
     if (adminBtn) adminBtn.style.display = 'none';
 });
+document.addEventListener("mousemove", (e) => {
+    const x = (window.innerWidth / 2 - e.clientX) * 0.02;
+    const y = (window.innerHeight / 2 - e.clientY) * 0.02;
+
+    document.querySelectorAll(".splash-layer").forEach((layer, i) => {
+        const depth = (i + 1) * 10;
+        layer.style.transform =
+            `translate(calc(-50% + ${x / depth}px), calc(-50% + ${y / depth}px))`;
+    });
+});
+
+/* DUST PARTICLES */
+const canvas = document.getElementById("particleCanvas");
+const ctx = canvas.getContext("2d");
+
+let w, h;
+function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+let particles = [];
+for (let i = 0; i < 120; i++) {
+    particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 2,
+        d: Math.random() * 1.5,
+    });
+}
+
+function animateParticles() {
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    particles.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        p.y -= p.d;
+        if (p.y < 0) {
+            p.y = h;
+            p.x = Math.random() * w;
+        }
+    });
+    requestAnimationFrame(animateParticles);
+}
+animateParticles();
+// Helper: Update Nav Badges
+function updateNavBadges() {
+    const cart = JSON.parse(sessionStorage.getItem('cart')) || [];
+    const favorites = JSON.parse(sessionStorage.getItem('favorites')) || [];
+
+    const cartBadge = document.getElementById('cart-count');
+    const favBadge = document.getElementById('favorites-count');
+
+    if (cartBadge) {
+        cartBadge.innerText = cart.length;
+        cartBadge.classList.add('pulse');
+        setTimeout(() => cartBadge.classList.remove('pulse'), 300);
+    }
+
+    if (favBadge) {
+        favBadge.innerText = favorites.length;
+        favBadge.classList.add('pulse');
+        setTimeout(() => favBadge.classList.remove('pulse'), 300);
+    }
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const favorites = JSON.parse(sessionStorage.getItem('favorites')) || [];
+    const buttons = document.querySelectorAll('.favorite-btn');
+
+    buttons.forEach(button => {
+        const card = button.closest('.listing-card');
+        const title = card.querySelector('.listing-title').innerText;
+        const exists = favorites.find(item => item.title === title);
+
+        if (exists) {
+            button.classList.add('active');
+            button.querySelector('i').classList.replace('far', 'fas');
+        } else {
+            button.classList.remove('active');
+            button.querySelector('i').classList.replace('fas', 'far');
+        }
+    });
+
+    // Initialize nav badges
+    updateNavBadges();
+});
+
+// Toggle Favorite
+function toggleFavorite(button) {
+    const card = button.closest('.listing-card');
+    const title = card.querySelector('.listing-title').innerText;
+    const seller = card.querySelector('.listing-seller').innerText;
+    const price = card.querySelector('.listing-price').innerText;
+    const condition = card.querySelector('.condition-tag').innerText;
+    const iconClass = card.querySelector('.listing-image i').className;
+
+    const listing = { title, seller, price, condition, iconClass };
+    let favorites = JSON.parse(sessionStorage.getItem('favorites')) || [];
+    const exists = favorites.find(item => item.title === title);
+
+    const notification = document.getElementById('notification');
+
+    if (exists) {
+        favorites = favorites.filter(item => item.title !== title);
+        button.classList.remove('active');
+        button.querySelector('i').classList.replace('fas','far');
+        notification.querySelector('.notification-text').innerText = 'Removed from favorites';
+    } else {
+        favorites.push(listing);
+        button.classList.add('active');
+        button.querySelector('i').classList.replace('far','fas');
+        notification.querySelector('.notification-text').innerText = 'Added to favorites!';
+    }
+
+    sessionStorage.setItem('favorites', JSON.stringify(favorites));
+    updateNavBadges();
+
+    // Show favorite notification
+    notification.classList.add('show');
+    setTimeout(() => notification.classList.remove('show'), 2000);
+}
+
+// Add to Cart
+function AddtoCart(button) {
+    const card = button.closest('.listing-card');
+    const title = card.querySelector('.listing-title').innerText;
+    const seller = card.querySelector('.listing-seller').innerText;
+
+    // Convert price string to number
+    const rawPrice = card.querySelector('.listing-price').innerText;
+    const price = parseFloat(rawPrice.replace(/[^\d.]/g, ''));
+
+    const iconClass = card.querySelector('.listing-image i').className;
+
+    const item = {
+        title,
+        seller,
+        price,
+        iconClass,
+        quantity: 1
+    };
+
+    let cart = JSON.parse(sessionStorage.getItem('cart')) || [];
+
+    // Check for existing item
+    const existingIndex = cart.findIndex(i => i.title === item.title);
+    if (existingIndex !== -1) {
+        cart[existingIndex].quantity += 1;
+    } else {
+        cart.push(item);
+    }
+
+    sessionStorage.setItem('cart', JSON.stringify(cart));
+
+    // Animate cart icon
+    const icon = button.querySelector('i');
+    icon.classList.add('rotate-cart');
+    setTimeout(() => icon.classList.remove('rotate-cart'), 600);
+
+    // Show cart notification
+    let cartNotification = document.getElementById('cart-notification');
+    if (!cartNotification) {
+        cartNotification = document.createElement('div');
+        cartNotification.id = 'cart-notification';
+        cartNotification.className = 'cart-notification';
+        cartNotification.innerHTML = `<i class="fas fa-check-circle"></i> <span class="notification-text">Added to Cart!</span>`;
+        document.body.appendChild(cartNotification);
+    } else {
+        cartNotification.querySelector('.notification-text').innerText = 'Added to Cart!';
+    }
+
+    // Force reflow to restart animation
+    cartNotification.offsetWidth;
+    cartNotification.classList.add('show');
+    setTimeout(() => cartNotification.classList.remove('show'), 2000);
+
+    // Update nav badge
+    updateNavBadges();
+}
+
+// Fade-in animation for cards
+const cards = document.querySelectorAll('.listing-card');
+cards.forEach((card, index) => {
+    card.style.opacity = 0;
+    card.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        card.style.opacity = 1;
+        card.style.transform = 'translateY(0)';
+    }, index * 150);
+});
+function restoreLoginState() {
+    const savedUser = sessionStorage.getItem('currentUser');
+    const loggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+
+    if (!loggedIn || !savedUser) {
+        return; // Nothing to restore
+    }
+
+    // ✅ Restore user
+    currentUser = JSON.parse(savedUser);
+
+    // ✅ Update auth UI
+    const authButtons = document.querySelector('.auth-buttons');
+
+    authButtons.innerHTML = `
+        <button class="btn btn-outline" id="logoutBtn">Logout</button>
+        ${
+            currentUser.userType === 'seller'
+            ? `<button class="btn btn-primary" id="sellerDashboardBtn">Seller Dashboard</button>`
+            : ''
+        }
+    `;
+
+    // ✅ Attach listeners again
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    if (currentUser.userType === 'seller') {
+        document.getElementById('sellerDashboardBtn')
+            .addEventListener('click', showSellerDashboard);
+    }
+}
