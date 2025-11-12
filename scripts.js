@@ -550,35 +550,47 @@ let currentUser = null;
 function logout() {
     // Show enhanced logout animation
     showEnhancedLogoutAnimation();
-    
+
     // Wait for animation to complete before actually logging out
     setTimeout(() => {
+        // Clear user data
         currentUser = null;
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('currentUser');
 
+        // Reset auth buttons
         const authButtons = document.querySelector('.auth-buttons');
-        authButtons.innerHTML = `
-            <button class="btn btn-outline" id="showLogin">Login</button>
-            <button class="btn btn-primary" id="showRegister">Register</button>
-        `;
+        if (authButtons) {
+            authButtons.innerHTML = `
+                <button class="btn btn-outline" id="showLogin">Login</button>
+                <button class="btn btn-primary" id="showRegister">Register</button>
+            `;
+        }
 
         // Reattach login/register listeners
-        document.getElementById('showLogin').addEventListener('click', () => {
-            document.getElementById('authModal').classList.add('active');
-            showAuthForm('login');
-        });
+        const showLogin = document.getElementById('showLogin');
+        const showRegister = document.getElementById('showRegister');
 
-        document.getElementById('showRegister').addEventListener('click', () => {
-            document.getElementById('authModal').classList.add('active');
-            showAuthForm('register');
-            setUserType('buyer');
-        });
+        if (showLogin) {
+            showLogin.addEventListener('click', () => {
+                document.getElementById('authModal').classList.add('active');
+                showAuthForm('login');
+            });
+        }
+
+        if (showRegister) {
+            showRegister.addEventListener('click', () => {
+                document.getElementById('authModal').classList.add('active');
+                showAuthForm('register');
+                setUserType('buyer');
+            });
+        }
 
         // Remove logout overlay after completion
         const logoutOverlay = document.getElementById('logout-overlay');
-        if (logoutOverlay) {
-            logoutOverlay.remove();
-        }
-        
+        if (logoutOverlay) logoutOverlay.remove();
+
+        console.log("👋 User successfully logged out and localStorage cleared.");
     }, 4000); // Match the animation duration
 }
 
@@ -805,8 +817,8 @@ if (email.toLowerCase() === 'admin@gmail.com') {
         username: 'Admin',
         userType: 'admin'
     };
-     sessionStorage.setItem('isLoggedIn', 'true');
-      sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+     localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
     // Close auth modal
     const authModal = document.getElementById('authModal');
     if (authModal) authModal.classList.remove('active');
@@ -991,9 +1003,9 @@ if (email.toLowerCase() === 'admin@gmail.com') {
 
         // ✅ Add userType to the object before sending forward
         user.userType = role;
-         //  Persist login state in sessionStorage
-         sessionStorage.setItem('isLoggedIn', 'true');
-         sessionStorage.setItem('currentUser', JSON.stringify(user));
+         // Store login state in localStorage
+         localStorage.setItem('isLoggedIn', 'true');
+         localStorage.setItem('currentUser', JSON.stringify(user));
 
         // Success animation + login operations
         completeLogin(user);
@@ -1570,7 +1582,12 @@ function toggleFavorite(button) {
     const card = button.closest('.listing-card');
     const title = card.querySelector('.listing-title').innerText;
     const seller = card.querySelector('.listing-seller').innerText;
-    const price = card.querySelector('.listing-price').innerText;
+    // Grab the raw price text from the card
+const rawPrice = card.querySelector('.listing-price').innerText;
+
+// Convert it to a number, removing any non-numeric characters (like $)
+const price = Number(rawPrice.replace(/[^0-9.-]+/g, "")) || 0;
+
     const condition = card.querySelector('.condition-tag').innerText;
     const iconClass = card.querySelector('.listing-image i').className;
 
@@ -1620,7 +1637,7 @@ function AddtoCart(button) {
         quantity: 1
     };
 
-    let cart = JSON.parse(sessionStorage.getItem('cart')) || [];
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
     // Check for existing item
     const existingIndex = cart.findIndex(i => i.title === item.title);
@@ -1670,33 +1687,54 @@ cards.forEach((card, index) => {
     }, index * 150);
 });
 function restoreLoginState() {
-    const savedUser = sessionStorage.getItem('currentUser');
-    const loggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    const savedUser = localStorage.getItem('currentUser');
+    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-    if (!loggedIn || !savedUser) {
-        return; // Nothing to restore
-    }
+    if (!loggedIn || !savedUser) return; // Nothing to restore
 
-    // ✅ Restore user
     currentUser = JSON.parse(savedUser);
-
-    // ✅ Update auth UI
     const authButtons = document.querySelector('.auth-buttons');
+    if (!authButtons) return;
 
-    authButtons.innerHTML = `
+    // 🧠 Build UI dynamically based on user type
+    let buttonsHTML = `
+        <div class="nav-action">
+            <i class="far fa-user"></i>
+            <span>${currentUser.username || 'My Account'}</span>
+        </div>
         <button class="btn btn-outline" id="logoutBtn">Logout</button>
-        ${
-            currentUser.userType === 'seller'
-            ? `<button class="btn btn-primary" id="sellerDashboardBtn">Seller Dashboard</button>`
-            : ''
-        }
     `;
 
-    // ✅ Attach listeners again
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-
     if (currentUser.userType === 'seller') {
-        document.getElementById('sellerDashboardBtn')
-            .addEventListener('click', showSellerDashboard);
+        buttonsHTML += `
+            <button class="btn btn-primary" id="sellerDashboardBtn">Seller Dashboard</button>
+        `;
     }
+
+    if (currentUser.userType === 'admin') {
+        buttonsHTML += `
+            <button class="btn btn-warning" id="adminPanelBtn">Admin Panel</button>
+        `;
+    }
+
+    authButtons.innerHTML = buttonsHTML;
+
+    // ✅ Reattach logout listener
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+
+    // ✅ Role-based restoration
+    if (currentUser.userType === 'admin') {
+        showAdminControls();
+    } else if (currentUser.userType === 'seller') {
+        const sellerBtn = document.getElementById('sellerDashboardBtn');
+        if (sellerBtn) sellerBtn.addEventListener('click', showSellerDashboard);
+    } else {
+        updateRoleUI('buyer');
+    }
+
+    console.log(`🔁 Restored session for ${currentUser.username} (${currentUser.userType})`);
 }
+
+window.addEventListener('DOMContentLoaded', restoreLoginState);
+
