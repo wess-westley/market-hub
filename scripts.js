@@ -742,7 +742,7 @@ function createFloatingParticles() {
     }
 }
 function showSellerDashboard() {
-    alert(`Welcome to your Seller Dashboard, ${currentUser.username}!`);
+    
     window.location.href = 'seller.html';
 
 }
@@ -1367,10 +1367,12 @@ function completeLogin(user) {
 
         
         document.querySelector('.auth-buttons').innerHTML = `
-            <div class="nav-action">
+        
+            <div class="nav-action" onclick="me()">
                 <i class="far fa-user"></i>
                 <span>${user.username || 'My Account'}</span>
             </div>
+            
             <button class="btn btn-outline" onclick="logout()">Logout</button>
          
 
@@ -1379,10 +1381,14 @@ function completeLogin(user) {
         // Clear login form
         document.getElementById('login-email').value = '';
         document.getElementById('login-password').value = '';
+       
         
     }, 2000);
 }
-
+function me() {
+   window.location.href="Account.html"
+  }
+ 
 function showVibeAlert(message, type) {
     const alert = document.createElement('div');
     alert.className = `vibe-alert ${type}`;
@@ -1556,7 +1562,7 @@ function updateNavBadges() {
 
 // Run on page load
 document.addEventListener('DOMContentLoaded', () => {
-    const favorites = JSON.parse(sessionStorage.getItem('favorites')) || [];
+    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
     const buttons = document.querySelectorAll('.favorite-btn');
 
     buttons.forEach(button => {
@@ -1637,7 +1643,7 @@ function AddtoCart(button) {
         quantity: 1
     };
 
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let cart = JSON.parse(sessionStorage.getItem('cart')) || [];
 
     // Check for existing item
     const existingIndex = cart.findIndex(i => i.title === item.title);
